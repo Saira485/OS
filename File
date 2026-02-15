@@ -1,0 +1,41 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+int main() {
+
+    // STEP 1: Create & Write to file
+    ofstream outFile("student.txt");   // file will be created
+
+    if (!outFile) {
+        cout << "File creation failed!";
+        return 0;
+    }
+
+    outFile << "Name: Sayali\n";
+    outFile << "Branch: CSE\n";
+    outFile << "College: Sanjivani University\n";
+
+    outFile.close();   // always close after writing
+    cout << "Data written successfully!\n\n";
+
+
+    // STEP 2: Read from file
+    ifstream inFile("student.txt");
+
+    if (!inFile) {
+        cout << "File opening failed!";
+        return 0;
+    }
+
+    string line;
+    cout << "Reading file content:\n";
+
+    while (getline(inFile, line)) {
+        cout << line << endl;
+    }
+
+    inFile.close();
+
+    return 0;
+}
