@@ -1,0 +1,41 @@
+#include <iostream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+using namespace std;
+
+int main() {
+
+    int n;
+    cout << "Enter number of child processes to create: ";
+    cin >> n;
+
+    for(int i = 0; i < n; i++) {
+
+        pid_t pid = fork();
+
+        if(pid < 0) {
+            cout << "Fork failed\n";
+            return 1;
+        }
+
+        // CHILD PROCESS
+        if(pid == 0) {
+            cout << "\nChild Process Created";
+            cout << "\nChild PID  : " << getpid();
+            cout << "\nParent PID : " << getppid() << endl;
+
+            sleep(2); // delay so output visible
+            return 0; // child stops here (important!)
+        }
+    }
+
+    // PARENT PROCESS waits all children
+    for(int i = 0; i < n; i++)
+        wait(NULL);
+
+    cout << "\nAll child processes finished execution.\n";
+    cout << "Parent PID : " << getpid() << endl;
+
+    return 0;
+}
