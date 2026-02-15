@@ -1,0 +1,42 @@
+#include <iostream>
+#include <unistd.h>     // fork(), getpid()
+#include <sys/types.h>
+#include <sys/wait.h>   // wait()
+using namespace std;
+
+int main() {
+
+    pid_t pid;
+
+    pid = fork();   // create child process
+
+    if(pid < 0) {
+        cout << "Process creation failed\n";
+    }
+
+    else if(pid == 0) {
+        // CHILD PROCESS
+        cout << "\n--- CHILD PROCESS ---\n";
+        cout << "Child PID : " << getpid() << endl;
+        cout << "Parent PID: " << getppid() << endl;
+
+        cout << "\nChild executing 'ls' command using execl()\n";
+
+        execl("/bin/ls","ls","-l",NULL);
+
+        // this line executes only if execl fails
+        cout << "Execution failed";
+    }
+
+    else {
+        // PARENT PROCESS
+        wait(NULL);  // wait for child
+
+        cout << "\n--- PARENT PROCESS ---\n";
+        cout << "Parent PID : " << getpid() << endl;
+        cout << "Child PID  : " << pid << endl;
+        cout << "Child completed execution\n";
+    }
+
+    return 0;
+}
