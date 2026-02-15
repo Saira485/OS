@@ -1,0 +1,69 @@
+#include <iostream>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+using namespace std;
+
+#define N 5
+
+sem_t forkSem[N];      // 5 forks
+sem_t room;            // allow only 4 philosophers
+pthread_mutex_t mutex;
+
+
+// Philosopher Function
+void* philosopher(void* num) {
+
+    int id = *((int*)num);
+
+    while(true) {
+
+        cout << "Philosopher " << id << " is thinking\n";
+        sleep(1);
+
+        // enter room (avoid deadlock)
+        sem_wait(&room);
+
+        // pick forks
+        sem_wait(&forkSem[id]);           // left fork
+        sem_wait(&forkSem[(id+1)%N]);     // right fork
+
+        // eating
+        cout << "Philosopher " << id << " is EATING\n";
+        sleep(2);
+
+        // put forks
+        sem_post(&forkSem[id]);
+        sem_post(&forkSem[(id+1)%N]);
+
+        // leave room
+        sem_post(&room);
+
+        cout << "Philosopher " << id << " finished eating\n";
+    }
+}
+
+int main() {
+
+    pthread_t ph[N];
+    int id[N];
+
+    // initialize room semaphore (max 4 allowed)
+    sem_init(&room, 0, N-1);
+
+    // initialize forks
+    for(int i=0;i<N;i++)
+        sem_init(&forkSem[i],0,1);
+
+    // create philosophers
+    for(int i=0;i<N;i++) {
+        id[i] = i;
+        pthread_create(&ph[i], NULL, philosopher, &id[i]);
+    }
+
+    // join threads
+    for(int i=0;i<N;i++)
+        pthread_join(ph[i], NULL);
+
+    return 0;
+}
