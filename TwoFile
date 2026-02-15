@@ -1,0 +1,47 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+int main() {
+
+    string str1, str2;
+    string read1, read2;
+
+    // Taking input
+    cout << "Enter string for File 1: ";
+    getline(cin, str1);
+
+    cout << "Enter string for File 2: ";
+    getline(cin, str2);
+
+
+    // Create and write to first file
+    ofstream file1("file1.txt");
+    file1 << str1;
+    file1.close();
+
+    // Create and write to second file
+    ofstream file2("file2.txt");
+    file2 << str2;
+    file2.close();
+
+
+    // Read from first file
+    ifstream rfile1("file1.txt");
+    getline(rfile1, read1);
+    rfile1.close();
+
+    // Read from second file
+    ifstream rfile2("file2.txt");
+    getline(rfile2, read2);
+    rfile2.close();
+
+
+    // Compare strings
+    if(read1 == read2)
+        cout << "\nBoth file strings are EQUAL";
+    else
+        cout << "\nBoth file strings are NOT EQUAL";
+
+    return 0;
+}
