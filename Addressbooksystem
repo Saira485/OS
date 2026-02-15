@@ -1,0 +1,174 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+using namespace std;
+
+class AddressBook {
+    char name[30], phone[15], email[40], city[20];
+
+public:
+
+    void input() {
+        cin.ignore();
+        cout << "Enter Name  : "; cin.getline(name,30);
+        cout << "Enter Phone : "; cin.getline(phone,15);
+        cout << "Enter Email : "; cin.getline(email,40);
+        cout << "Enter City  : "; cin.getline(city,20);
+    }
+
+    void display() {
+        cout << "\nName  : " << name;
+        cout << "\nPhone : " << phone;
+        cout << "\nEmail : " << email;
+        cout << "\nCity  : " << city << endl;
+        cout << "---------------------------\n";
+    }
+
+    char* getName() { return name; }
+};
+
+
+// 1. Create Address Book
+void create() {
+    AddressBook a;
+    ofstream fout("addressbook.txt", ios::binary);
+
+    int n;
+    cout << "How many records? ";
+    cin >> n;
+
+    for(int i=0;i<n;i++) {
+        cout << "\nEnter record " << i+1 << endl;
+        a.input();
+        fout.write((char*)&a,sizeof(a));
+    }
+
+    fout.close();
+    cout << "\nAddress Book Created Successfully!\n";
+}
+
+
+// 2. Display Address Book
+void displayAll() {
+    AddressBook a;
+    ifstream fin("addressbook.txt", ios::binary);
+
+    if(!fin) {
+        cout << "No Address Book Found!\n";
+        return;
+    }
+
+    cout << "\n---- Address Book ----\n";
+    while(fin.read((char*)&a,sizeof(a)))
+        a.display();
+
+    fin.close();
+}
+
+
+// 3. Insert New Record
+void insertRecord() {
+    AddressBook a;
+    ofstream fout("addressbook.txt", ios::app | ios::binary);
+
+    cout << "\nEnter New Record:\n";
+    a.input();
+    fout.write((char*)&a,sizeof(a));
+
+    fout.close();
+    cout << "Record Inserted Successfully!\n";
+}
+
+
+// 4. Delete Record
+void deleteRecord() {
+    AddressBook a;
+    char search[30];
+    bool found=false;
+
+    cout << "Enter name to delete: ";
+    cin.ignore();
+    cin.getline(search,30);
+
+    ifstream fin("addressbook.txt", ios::binary);
+    ofstream fout("temp.txt", ios::binary);
+
+    while(fin.read((char*)&a,sizeof(a))) {
+        if(strcmp(a.getName(),search)!=0)
+            fout.write((char*)&a,sizeof(a));
+        else
+            found=true;
+    }
+
+    fin.close();
+    fout.close();
+
+    remove("addressbook.txt");
+    rename("temp.txt","addressbook.txt");
+
+    if(found) cout << "Record Deleted!\n";
+    else cout << "Record Not Found!\n";
+}
+
+
+// 5. Modify Record
+void modifyRecord() {
+    AddressBook a;
+    char search[30];
+    bool found=false;
+
+    cout << "Enter name to modify: ";
+    cin.ignore();
+    cin.getline(search,30);
+
+    fstream file("addressbook.txt", ios::in|ios::out|ios::binary);
+
+    while(file.read((char*)&a,sizeof(a))) {
+        if(strcmp(a.getName(),search)==0) {
+            cout << "\nEnter New Details:\n";
+            a.input();
+
+            file.seekp(-sizeof(a), ios::cur);
+            file.write((char*)&a,sizeof(a));
+            found=true;
+            break;
+        }
+    }
+
+    file.close();
+
+    if(found) cout << "Record Modified!\n";
+    else cout << "Record Not Found!\n";
+}
+
+
+// MAIN MENU
+int main() {
+
+    int choice;
+
+    do {
+        cout << "\n===== ADDRESS BOOK MENU =====\n";
+        cout << "1. Create Address Book\n";
+        cout << "2. Display Address Book\n";
+        cout << "3. Insert New Record\n";
+        cout << "4. Delete Existing Record\n";
+        cout << "5. Modify Existing Record\n";
+        cout << "6. Exit\n";
+        cout << "Enter Choice: ";
+        cin >> choice;
+
+        switch(choice) {
+            case 1: create(); break;
+            case 2: displayAll(); break;
+            case 3: insertRecord(); break;
+            case 4: deleteRecord(); break;
+            case 5: modifyRecord(); break;
+            case 6: cout << "Exiting Program..."; break;
+            default: cout << "Invalid Choice!";
+        }
+
+    } while(choice != 6);
+
+    return 0;
+}
