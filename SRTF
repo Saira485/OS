@@ -1,0 +1,82 @@
+#include <iostream>
+using namespace std;
+
+int main() {
+
+    int n;
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    int at[n], bt[n], rt[n], ct[n], tat[n], wt[n];
+
+    // Input
+    for(int i=0;i<n;i++) {
+        cout << "\nProcess P" << i+1 << endl;
+        cout << "Arrival Time: ";
+        cin >> at[i];
+        cout << "Burst Time: ";
+        cin >> bt[i];
+        rt[i] = bt[i]; // remaining time
+    }
+
+    int complete = 0, currentTime = 0;
+    int minm = 9999, shortest = 0;
+    bool found = false;
+
+    while(complete != n) {
+
+        // find process with minimum remaining time
+        for(int i=0;i<n;i++) {
+            if(at[i] <= currentTime && rt[i] > 0 && rt[i] < minm) {
+                minm = rt[i];
+                shortest = i;
+                found = true;
+            }
+        }
+
+        if(found == false) {
+            currentTime++;
+            continue;
+        }
+
+        // execute for 1 unit time
+        rt[shortest]--;
+        minm = rt[shortest];
+
+        if(minm == 0)
+            minm = 9999;
+
+        // if process finished
+        if(rt[shortest] == 0) {
+            complete++;
+            int finish_time = currentTime + 1;
+
+            ct[shortest] = finish_time;
+            tat[shortest] = ct[shortest] - at[shortest];
+            wt[shortest] = tat[shortest] - bt[shortest];
+
+            if(wt[shortest] < 0)
+                wt[shortest] = 0;
+        }
+
+        currentTime++;
+        found = false;
+    }
+
+    // Output
+    cout << "\nP\tAT\tBT\tCT\tWT\tTAT\n";
+    float avgWT=0, avgTAT=0;
+
+    for(int i=0;i<n;i++) {
+        cout << "P" << i+1 << "\t" << at[i] << "\t" << bt[i] << "\t"
+             << ct[i] << "\t" << wt[i] << "\t" << tat[i] << endl;
+
+        avgWT += wt[i];
+        avgTAT += tat[i];
+    }
+
+    cout << "\nAverage Waiting Time = " << avgWT/n;
+    cout << "\nAverage Turnaround Time = " << avgTAT/n;
+
+    return 0;
+}
