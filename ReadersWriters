@@ -1,0 +1,93 @@
+#include <iostream>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+using namespace std;
+
+sem_t wrt;          // writer semaphore
+pthread_mutex_t mutex;
+
+int readcount = 0;  // number of readers
+int data = 0;       // shared resource
+
+
+// Reader Function
+void* reader(void* arg) {
+
+    int id = *((int*)arg);
+
+    // Entry section
+    pthread_mutex_lock(&mutex);
+    readcount++;
+
+    if(readcount == 1)
+        sem_wait(&wrt);   // first reader blocks writer
+
+    pthread_mutex_unlock(&mutex);
+
+    // Reading
+    cout << "Reader " << id << " is reading data = " << data << endl;
+    sleep(1);
+
+    // Exit section
+    pthread_mutex_lock(&mutex);
+    readcount--;
+
+    if(readcount == 0)
+        sem_post(&wrt);   // last reader releases writer
+
+    pthread_mutex_unlock(&mutex);
+
+    return NULL;
+}
+
+
+// Writer Function
+void* writer(void* arg) {
+
+    int id = *((int*)arg);
+
+    sem_wait(&wrt);   // writer enters critical section
+
+    data++; // writing
+    cout << "Writer " << id << " is writing data = " << data << endl;
+    sleep(2);
+
+    sem_post(&wrt);   // writer leaves
+
+    return NULL;
+}
+
+
+int main() {
+
+    pthread_t r[5], w[5];
+    pthread_mutex_init(&mutex, NULL);
+    sem_init(&wrt, 0, 1);
+
+    int id[5];
+
+    // create writer threads
+    for(int i=0;i<2;i++) {
+        id[i] = i+1;
+        pthread_create(&w[i], NULL, writer, &id[i]);
+    }
+
+    // create reader threads
+    for(int i=0;i<3;i++) {
+        id[i] = i+1;
+        pthread_create(&r[i], NULL, reader, &id[i]);
+    }
+
+    // join threads
+    for(int i=0;i<3;i++)
+        pthread_join(r[i], NULL);
+
+    for(int i=0;i<2;i++)
+        pthread_join(w[i], NULL);
+
+    pthread_mutex_destroy(&mutex);
+    sem_destroy(&wrt);
+
+    return 0;
+}
